@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link href="bootstrap-5.0.2-dist/css/bootstrap.min.css" rel="stylesheet">
+		<title>Membros</title>
+	</head>
+	<body>
+
+		<nav class="navbar navbar-expand-lg navbar-light bg-light">
+			<div class="container-fluid">
+				<a class="navbar-brand" href="#">Sistema de Membros 0.1</a>
+				<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="collapse navbar-collapse" id="navbarSupportedContent">
+					<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+						<li class="nav-item">
+							<a class="nav-link active" aria-current="page" href="#" onClick="showContent(1)">Principal</a>
+						</li>
+						<li class="nav-item">
+							<a class="nav-link" href="#" onClick="showContent(2)">Membros</a>
+						</li>
+						<li class="nav-item dropdown">
+							<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+								Impressões
+							</a>
+							<ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+								<li><a class="dropdown-item" href="#">Em construção</a></li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+
+		<div style="padding: 5%">
+			<div id="content"></div>
+		</div>
+
+		<script src="bootstrap-5.0.2-dist/js/bootstrap.bundle.min.js" ></script>
+		<script type='text/javascript'>
+
+			const MEMBROS = 'MEMBROS'
+
+			const membroInicial = {
+				id: 1,
+				name: 'Leonardo Pereira Magalhães',
+				ddd: 61,
+				number: 996398396,
+				email: 'falecomleonardopereira@gmail.com',
+				day: 7,
+				month: 3,
+				year: 1990,
+				job: 'Programador',
+			}
+
+			const showContent = tab => {
+				let html = ''
+				if(tab === 1 || tab === 2){
+					html = html.concat(
+						'<div style="display: flex; flex: 1; justify-content: space-between">',
+						`<h3>${tab === 1 ? 'Aniversariantes' : 'Lista de Membros'}</h3>`,
+						tab === 2 ? `<button type="button" class="btn btn-primary btn-sm" onClick="showAddMember(null)">Adicionar</button>` : '',
+						'</div>',
+						'<table class="table">',
+						'<thead>',
+						'<tr>',
+						'<th scope="col">#</th>',
+						'<th scope="col">Nome</th>',
+						'<th scope="col">Telefone</th>',
+						'<th scope="col">Data Nascimento</th>',
+						'<th scope="col">Profissão</th>',
+						'<th scope="col"></th>',
+						'<th scope="col"></th>',
+						'</tr>',
+						'</thead>',
+						'<tbody>'
+					)
+
+					const membros = getLocalStorage(MEMBROS)
+					membros.map(membro => {
+						const now = new Date()
+						if(
+							tab === 2 ||
+							(tab === 1 && now.getDate() == membro.day && now.getMonth() == membro.month)
+						){
+							html = html.concat(
+								`<tr>`,
+								`<th scope="row">${membro.id}</th>`,
+								`<td>${membro.name}</td>`,
+								`<td>${membro.ddd}${membro.number}</td>`,
+								`<td>${membro.day.toString().padStart(2,0)}/${membro.month.toString().padStart(2,0)}/${membro.year}</td>`,
+								`<td>${membro.job}</td>`,
+								`<td><button type="button" class="btn btn-primary btn-sm" onClick="showAddMember(${membro.id})">Alterar</button></td>`,
+								`<td><button type="button" class="btn btn-danger btn-sm" onClick="removerMember(${membro.id})">Excluir</button></td>`,
+								`</tr>`
+							)
+						}
+					})
+
+					html = html.concat(
+						'</tbody>',
+						'</table>',
+					)
+				}
+				document.getElementById('content').innerHTML = html
+			}
+
+			const getLocalStorage = name => {
+				const data = localStorage.getItem(name)
+				if(data){
+					return JSON.parse(data)
+				}
+				return [membroInicial]
+			}
+
+			const setLocalStorage = (name, data) => {
+				localStorage.setItem(name, JSON.stringify(data))
+				return true
+			}
+
+			const addOneLocalStorage = (name, data) => {
+				const state = getLocalStorage(name)
+				localStorage.setItem(name, JSON.stringify(state.concat(data)))
+				return true
+			}
+
+			const updateOneInLocalStorage = (name, data) => {
+				const state = getLocalStorage(name)
+
+				const newState = state.map(item => {
+					if(item.id !== data.id){
+						return item
+					}
+					return Object.assign({}, item, data)
+				})
+
+				localStorage.setItem(name, JSON.stringify(newState))
+				return true
+			}
+
+			const deleteOneInLocalStorage = (name, data) => {
+				const state = getLocalStorage(name)
+				const newState = state.filter(item => item.id !== data.id)
+				localStorage.setItem(name, JSON.stringify(newState))
+				return true
+			}
+
+			const addSeveralInLocalStorage = (name, data) => {
+				const state = getLocalStorage(name)
+				localStorage.setItem(name, JSON.stringify([...state, ...data]))
+				return true
+			}
+
+			const init = () => {
+				showContent(1)
+			}
+
+			const showAddMember = id => {
+				const membros = getLocalStorage(MEMBROS)
+				const membro = membros.find(membro => membro.id === id)
+				html = ''
+				html = html.concat(
+					'<div>',
+					`<h3>i${membro ? 'Alterar' : 'Adicionar'} Membro</h3>`,
+
+					'<div class="mb-3">',
+					'<label for="name" class="form-label">Nome</label>',
+					`<input type="text" class="form-control" id="name" value="${membro ? membro.name : ''}">`,
+					'</div>',
+
+					'<div class="row mb-3">',
+					'<div class="col-2">',
+					'<label for="ddd" class="form-label">DDD</label>',
+					`<input type="number" class="form-control" id="ddd" value="${membro ? membro.ddd : ''}">`,
+					'</div>',
+					'<div class="col">',
+					'<label for="number" class="form-label">Telefone</label>',
+					`<input type="number" class="form-control" id="number" value="${membro ? membro.number : ''}">`,
+					'</div>',
+					'</div>',
+
+					'<div class="row mb-3">',
+					'<label for="number" class="form-label">Data de Nascimento</label>',
+					'<div class="col-4">',
+					'<label for="ddd" class="form-label">Dia</label>',
+					`<select class="form-control" id="day">`,
+					`<option value=0>Selecione</option>`
+				)
+				for(let x = 1;x <= 31; x++){
+					html = html.concat(`<option value=${x} ${membro && membro.day === x ? 'selected' : ''}>${x}</option>`)
+				}
+				html = html.concat(
+					'</select>',
+					'</div>',
+					'<div class="col-4">',
+					'<label for="number" class="form-label">Mês</label>',
+					'<select class="form-control" id="month">',
+					`<option value=0>Selecione</option>`
+				)
+				for(let x = 1;x <= 12; x++){
+							 html = html.concat(`<option value=${x} ${membro && membro.month === x ? 'selected' : ''}>${x}</option>`)
+				}
+
+				html = html.concat(
+					'</select>',
+					'</div>',
+					'<div class="col-4">',
+					'<label for="number" class="form-label">Ano</label>',
+					'<select class="form-control" id="year">',
+					`<option value=0>Selecione</option>`
+				)
+
+				for(let x = 2021;x >= 1921; x--){
+					html = html.concat(`<option value=${x} ${membro && membro.year === x ? 'selected' : ''}>${x}</option>`)
+				}
+
+				html = html.concat(
+					'</select>',
+					'</div>',
+
+					'</div>',
+
+					'<div class="mb-3">',
+					'<label for="email" class="form-label">Email</label>',
+					`<input type="email" class="form-control" id="email" value="${membro ? membro.email : ''}">`,
+					'</div>',
+
+					'<div class="mb-3">',
+					'<label for="profissao" class="form-label">Profissão</label>',
+					`<input type="text" class="form-control" id="job" value="${membro ? membro.job : ''}">`,
+					'</div>',
+
+					`<button type="button" class="btn btn-primary btn-sm" onClick="addMember(${membro ? membro.id : null})">${membro ? 'Alterar' : 'Adicionar'}</button>`,
+
+					'</div>',
+				)
+				document.getElementById('content').innerHTML = html
+			}
+
+			const addMember = (id = null) => {
+				const name = document.getElementById('name').value
+				const ddd = parseInt(document.getElementById('ddd').value)
+				const number = parseInt(document.getElementById('number').value)
+				const email = document.getElementById('email').value
+				const day = parseInt(document.getElementById('day').value)
+				const month = parseInt(document.getElementById('month').value)
+				const year = parseInt(document.getElementById('year').value)
+				const job = document.getElementById('job').value
+
+				if(name === ''){
+					alert('Preencha o nome')
+					return false
+				}
+
+				const idTemp = getLocalStorage(MEMBROS).length + 1
+				const data = {
+					id: id === null ? idTemp : id,
+					name,
+					ddd,
+					number,
+					email,
+					day,
+					month,
+					year,
+					job,
+				}
+
+				if(id === null){
+					addOneLocalStorage(MEMBROS, data)
+				}
+				if(id !== null){
+					updateOneInLocalStorage(MEMBROS, data)
+				}
+				showContent(2)
+			}
+
+			const removerMember = id => {
+				const result = confirm('Realmente deseja remover esse membro?')
+				deleteOneInLocalStorage(MEMBROS, {id})
+				showContent(2)
+			}
+
+			init()
+
+		</script>
+	</body>
+</html>
